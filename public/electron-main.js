@@ -59,6 +59,7 @@ app.whenReady().then(() => {
   protocol.registerFileProtocol("atom", (request, callback) => {
     console.log(request.url);
     const url = request.url.substr(7);
+
     callback({ path: url });
   });
 });

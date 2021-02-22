@@ -1,9 +1,15 @@
 // import "../Sass/App.sass";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // Assets
 import tw, { styled } from "twin.macro";
-import { MedMeanFilter, ConvFilter, MorphFilter } from "./Components/Filter";
+import {
+  MedMeanFilter,
+  ConvFilter,
+  MorphFilter,
+  GenerateVideo,
+  Button,
+} from "./Components/Filter";
 import { IoColorFilter } from "react-icons/io5";
 import { ImMakeGroup, ImSpinner10 } from "react-icons/im";
 import { GiMultipleTargets } from "react-icons/gi";
@@ -85,15 +91,22 @@ export default function App() {
   const [pathToResultFile, setPathToResultFile] = useState("");
   //=====================================
   const [filter1params, setFilter1Params] = useState(1);
-  const [filter2params, setFilter2Params] = useState(1);
+  const [filter2params, setFilter2Params] = useState(2);
   const [filter3params, setFilter3Params] = useState(1);
   const [filter4params, setFilter4Params] = useState({
     op: 1,
-    type: 2,
+    type: 0,
     size: 4,
   });
   //=====================================
-  // The function triggered by your button
+  const [part2, setPart2] = useState({
+    nbShapes: 6,
+    tauxBruit: 6,
+    length: 30,
+    path2result: "",
+  });
+  //=====================================
+  const [isHoldingDiff, setIsHoldingDiff] = useState(false);
 
   const storeImageFile = async (e) => {
     // Open a dialog to ask for the file path
@@ -106,22 +119,42 @@ export default function App() {
   const handleFilterChange = (filter) => (e) => {
     setSelectedFilter(filter);
     if (!pathToFile) return;
-    runFilters();
+    runFilters(filter);
   };
 
-  const runFilters = () => {
+  const handleFilterParamChange = (filter) => (parms) => {
+    switch (filter) {
+      case 0:
+        setFilter1Params(parms);
+        break;
+      case 1:
+        setFilter2Params(parms);
+        break;
+      case 2:
+        setFilter3Params(parms);
+        break;
+      case 3:
+        setFilter4Params(parms);
+        break;
+      default:
+        break;
+    }
+    if (!pathToFile) return;
+    runFilters(filter, parms);
+  };
+
+  const runFilters = (filter, params) => {
     setLoading(true);
     const fileName = Date.now() + path.basename(pathToFile);
     const cmnd = `${path2exe} p1 ${
-      ["MEAN", "MEDIAN", "CONV", "MORPH"][selectedFilter]
+      ["MEAN", "MEDIAN", "CONV", "MORPH"][filter]
     } ${pathToFile} ${path.join(
       app.getPath("userData"),
       fileName
     )} ${translateParams(
-      selectedFilter,
-      [filter1params, filter2params, filter3params, filter4params][
-        selectedFilter
-      ]
+      filter,
+      params || // for new params
+        [filter1params, filter2params, filter3params, filter4params][filter]
     )}`;
 
     console.log(cmnd);
@@ -162,26 +195,26 @@ export default function App() {
               <MedMeanFilter
                 Mean
                 params={filter1params}
-                setParams={setFilter1Params}
+                setParams={handleFilterParamChange(0)}
                 selected={selectedFilter === 0}
                 onClick={handleFilterChange(0)}
               />
               <MedMeanFilter
                 Mean={false}
                 params={filter2params}
-                setParams={setFilter2Params}
+                setParams={handleFilterParamChange(1)}
                 selected={selectedFilter === 1}
                 onClick={handleFilterChange(1)}
               />
               <ConvFilter
                 params={filter3params}
-                setParams={setFilter3Params}
+                setParams={handleFilterParamChange(2)}
                 selected={selectedFilter === 2}
                 onClick={handleFilterChange(2)}
               />
               <MorphFilter
                 params={filter4params}
-                setParams={setFilter4Params}
+                setParams={handleFilterParamChange(3)}
                 selected={selectedFilter === 3}
                 onClick={handleFilterChange(3)}
               />
@@ -191,42 +224,89 @@ export default function App() {
               />
             </div>
           ) : tab === 1 ? (
-            <>
-              <div>tab2</div>
+            <div>
+              <div tw="w-full mb-4 text-2xl text-blue-400 font-bold text-center">
+                <span tw="bg-clip-text text-transparent bg-gradient-to-tr from-blue-500 to-blue-300">
+                  GENERATE
+                </span>
+              </div>
+
+              <GenerateVideo part2={part2} setPart2={setPart2} />
               <UpDownLoad />
-            </>
+            </div>
           ) : (
-            <>
-              <div>tab3</div>
+            <div>
+              <div tw="w-full mb-4 text-2xl text-blue-400 font-bold text-center">
+                <span tw="bg-clip-text text-transparent bg-gradient-to-tr from-blue-500 to-blue-300">
+                  DETECT
+                </span>
+              </div>
+
+              <Button>
+                <span>DETECT !</span>
+              </Button>
               <UpDownLoad />
-            </>
+            </div>
           )}
         </div>
       </Container>
 
       <Container tw="w-full lg:w-8/12 relative bg-gradient-to-tl p-8 from-blue-50 to-gray-100">
-        <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
-          {!pathToFile ? (
-            <Empty />
-          ) : loading ? (
-            <Loading />
-          ) : (
-            <img
-              tw="w-full h-full border rounded-3xl shadow-inner"
-              alt=""
-              src={
-                pathToResultFile
-                  ? "atom://" + pathToResultFile
-                  : pathToFile
-                  ? "atom://" + pathToFile
-                  : ""
-              }
-            />
-          )}
-        </div>
-        <PlayButton tw="absolute bottom-0 left-0 m-2 cursor-pointer bg-blue-50 hover:ring-2 ring-blue-300 hover:bg-blue-100 shadow-2xl">
-          <MdCompare tw="h-full w-full p-4 text-blue-400" />
-        </PlayButton>
+        {tab === 0 ? (
+          <>
+            <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
+              {!pathToFile ? (
+                <Empty />
+              ) : loading ? (
+                <Loading />
+              ) : (
+                <img
+                  tw="w-full h-full border rounded-3xl shadow-inner"
+                  alt=""
+                  key={Date.now().toString()}
+                  src={
+                    pathToResultFile && !isHoldingDiff
+                      ? "atom://" + pathToResultFile
+                      : pathToFile
+                      ? "atom://" + pathToFile
+                      : ""
+                  }
+                />
+              )}
+            </div>
+            <PlayButton tw="absolute bottom-0 left-0 m-2 cursor-pointer bg-blue-50 hover:ring-2 ring-blue-300 hover:bg-blue-100 shadow-2xl">
+              <MdCompare
+                tw="h-full w-full p-4 text-blue-400"
+                onMouseEnter={(e) => setIsHoldingDiff(true)}
+                onMouseLeave={(e) => setIsHoldingDiff(false)}
+              />
+            </PlayButton>
+          </>
+        ) : tab === 1 ? (
+          <>
+            <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
+              {part2.path2result ? ( // TODO flip to not
+                <Empty />
+              ) : loading ? (
+                <Loading />
+              ) : (
+                <video
+                  controls
+                  autoplay
+                  tw="w-full h-full border rounded-3xl shadow-inner outline-none"
+                  alt=""
+                >
+                  <source
+                    src="atom:///home/oussama/test.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+              )}
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
       </Container>
     </div>
   );
