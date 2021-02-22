@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require("electron");
+const { app, protocol, BrowserWindow } = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
 
@@ -11,6 +11,8 @@ const createWindow = () => {
     width: 1200,
     // frame: false, // removes the frame from the BrowserWindow. It is advised that you either create a custom menu bar or remove this line
     webPreferences: {
+      enableRemoteModule: true,
+      webSecurity: false,
       devTools: isDev, // toggles whether devtools are available. to use node write window.require('<node-name>')
       nodeIntegration: true, // turn this off if you don't mean to use node
     },
@@ -52,3 +54,11 @@ app.on("window-all-closed", () => {
 // code. You can also put them in separate files and require them here.
 
 // to access anything in here use window.require('electron').remote
+
+app.whenReady().then(() => {
+  protocol.registerFileProtocol("atom", (request, callback) => {
+    console.log(request.url);
+    const url = request.url.substr(7);
+    callback({ path: url });
+  });
+});

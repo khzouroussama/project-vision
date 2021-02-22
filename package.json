@@ -2,6 +2,10 @@
   "name": "project-vision",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "Khezour Mohamed Oussama",
+    "email": "khzouroussama@gmail.com"
+  },
   "dependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.29",
@@ -43,6 +47,32 @@
   "devDependencies": {
     "@types/react": "^17.0.2",
     "@types/styled-components": "^5.1.7"
+  },
+  "build": {
+    "appId": "ProjectViosion",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "projectvision.exe"
+    },
+    "extraResources": [
+      "./extraResources/**"
+    ]
   },
   "babelMacros": {
     "twin": {

@@ -1,6 +1,5 @@
 // order to import: CSS, React, node, code, components, assets
 
-import "./index.sass";
 // React
 import React from "react";
 import ReactDOM from "react-dom";
@@ -10,9 +9,23 @@ import * as serviceWorker from "./serviceWorker";
 import App from "./App";
 import GlobalStylesComponent from "./Components/GlobalStyles";
 
+import tw from "twin.macro";
+import { createGlobalStyle } from "styled-components";
+
+const StylesBase = createGlobalStyle`
+  .slider-thumb::-webkit-slider-thumb {
+    ${tw`appearance-none w-6 h-6 rounded-full bg-blue-400 cursor-pointer`} 
+  } 
+
+  .slider-thumb::-webkit-slider-thumb:hover {
+     ${tw`bg-blue-500`};
+  }
+`;
+
 ReactDOM.render(
   <React.StrictMode>
     <GlobalStylesComponent />
+    <StylesBase />
     <App />
   </React.StrictMode>,
   document.getElementById("root")

@@ -14,7 +14,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "checkJs": false
   },
   "include": ["src", "twin.d.ts"],
   "files": ["twin.d.ts"]
