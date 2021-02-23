@@ -57,6 +57,7 @@ export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
             </select>
           </div>
           <Slider
+            aside
             title={(params.op === 1 ? "DIALATE" : "EROSION") + " Size"}
             min={1}
             max={25}

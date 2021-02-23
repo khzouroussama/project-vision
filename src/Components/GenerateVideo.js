@@ -1,3 +1,4 @@
+import { Slider } from "./Slider";
 import { Button, Card, Divider } from "./StyledComponents";
 
 export const GenerateVideo = ({ part2, setPart2 }) => {
@@ -7,26 +8,18 @@ export const GenerateVideo = ({ part2, setPart2 }) => {
           {FilterName("MORPH")}
         </div> */}
 
-      <div tw="w-full text-center  font-bold mb-1 uppercase text-blue-400">
-        NB géométrie
-      </div>
-      <div tw="px-8">
-        <input
-          className="slider-thumb"
-          type="range"
-          min={1}
-          max={20}
-          step={1}
-          value={part2.nbShapes}
-          onChange={(e) =>
-            setPart2({ ...part2, nbShapes: parseInt(e.target.value) })
-          }
-          tw="appearance-none rounded-3xl w-full h-6 bg-blue-100 outline-none "
-        />
-      </div>
-      <div tw="w-full text-center text-sm font-bold text-blue-400">
-        {part2.nbShapes} géométrie
-      </div>
+      <Slider
+        title="Nb géométrie"
+        min={1}
+        max={20}
+        step={1}
+        value={part2.nbShapes}
+        mesureUnit="géométrie"
+        onChange={(e) =>
+          setPart2({ ...part2, nbShapes: parseInt(e.target.value) })
+        }
+        aside
+      />
 
       <Divider />
 

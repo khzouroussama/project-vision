@@ -38,13 +38,14 @@ const Container = tw.div`rounded-3xl border-2 border-blue-300 bg-gray-50 shadow`
 
 const BigButton = styled(motion.div)(({ selected }) => [
   tw`rounded-3xl bg-blue-100  border-blue-300 
-  w-20 h-20 m-auto my-4 hover:ring-2 ring-blue-300 cursor-pointer`,
-  selected && tw`ring-2`,
+  w-20 h-20 m-auto my-4 hover:ring-1 ring-blue-300 cursor-pointer`,
+  selected && tw`ring-2 hover:ring-2`,
 ]);
 
 const PlayButton = tw.div`rounded-full border-2 border-blue-300 w-20 h-20 shadow-lg`;
+
 const FileButton = styled.div(({ direction }) => [
-  tw`w-32 h-16  border-2 border-blue-300 bg-blue-50 hover:bg-blue-200 cursor-pointer`,
+  tw`w-32 h-16 border-2 border-blue-300 bg-blue-50 hover:bg-blue-200 cursor-pointer flex flex-col`,
   direction === "left"
     ? tw`rounded-tl-2xl border-b-0 border-r-0`
     : tw`rounded-tr-2xl border-b-0 `,
@@ -55,10 +56,16 @@ const UpDownLoad = ({ handleUpload, hadndleDownload }) => {
     <div tw="absolute bottom-0 left-1/2 transform -translate-x-1/2  ml-2">
       <div tw="flex">
         <FileButton direction="left" onClick={hadndleDownload}>
-          <TiDownload tw="h-full w-full p-4 text-blue-400" />
+          <TiDownload tw="h-14 w-14 mx-auto mt-1 text-blue-400" />
+          <span tw="w-full text-sm font-bold text-blue-400 text-center uppercase">
+            save
+          </span>
         </FileButton>
         <FileButton direction="right" onClick={handleUpload}>
-          <TiUpload tw="h-full w-full p-4 text-blue-400" />
+          <TiUpload tw="h-14 w-14 mx-auto mt-1 text-blue-400" />
+          <span tw="w-full text-sm font-bold text-blue-400 text-center uppercase">
+            import
+          </span>
         </FileButton>
       </div>
     </div>
