@@ -1,15 +1,9 @@
 // import "../Sass/App.sass";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 // Assets
 import tw, { styled } from "twin.macro";
-import {
-  MedMeanFilter,
-  ConvFilter,
-  MorphFilter,
-  GenerateVideo,
-  Button,
-} from "./Components/Filter";
+import { MedMeanFilter, ConvFilter, MorphFilter } from "./Components/Filters";
 import { motion } from "framer-motion";
 import { IoColorFilter } from "react-icons/io5";
 import { ImMakeGroup, ImSpinner10 } from "react-icons/im";
@@ -17,6 +11,8 @@ import { GiMultipleTargets } from "react-icons/gi";
 import { MdCompare } from "react-icons/md";
 import { TiDownload, TiUpload } from "react-icons/ti";
 import { BsInboxesFill } from "react-icons/bs";
+import { Button } from "./Components/StyledComponents";
+import { GenerateVideo } from "./Components/GenerateVideo";
 
 // import logo from "../Assets/logo.svg";
 
@@ -76,6 +72,7 @@ const translateParams = (filter, params) => {
     case 1:
       return `${params}`;
     case 2:
+      // eslint-disable-next-line eqeqeq
       return `${params == 1 ? "GAUSS" : "LAPLAC"}`;
     case 3:
       return `${params.op === 1 ? "DIALATE" : "EROSION"} ${params.type} ${
