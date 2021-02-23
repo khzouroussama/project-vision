@@ -1,5 +1,52 @@
+import { motion } from "framer-motion";
 import React, { useState } from "react";
 import tw, { styled } from "twin.macro";
+
+const Card = styled(motion.div)(({ selected }) => [
+  tw`bg-white rounded-xl border-2 border-blue-300 mb-3 p-2  
+cursor-pointer hover:ring-2 hover:ring-blue-300 shadow-inner`,
+  !selected && tw`hover:bg-blue-50 hover:shadow`,
+]);
+
+const SelectableHalf = styled.div(({ selected, direction }) => [
+  tw`w-1/2  hover:bg-blue-200 flex`,
+  selected && tw`bg-blue-400 hover:bg-blue-400 text-blue-50`,
+  direction === "right" ? tw`rounded-r-3xl` : tw`rounded-l-3xl`,
+]);
+
+export const Button = tw(
+  motion.div
+)`appearance-none rounded-xl w-full p-4 text-xl font-bold 
+text-white text-center bg-blue-500 outline-none cursor-pointer`;
+
+const filterCardAnimations = {
+  whileTap: { scale: 0.8 },
+};
+const sliderAnimation = {
+  whileTap: { scale: 1.1 },
+};
+
+const Slider = ({ title, value, mesureUnit, ...rest }) => (
+  <div>
+    <div tw="w-full text-center text-sm font-bold my-1 uppercase text-blue-400">
+      {title}
+    </div>
+    <motion.div tw="px-8  h-4 flex" {...sliderAnimation}>
+      <input
+        className="slider-thumb"
+        type="range"
+        value={value}
+        {...rest}
+        tw="appearance-none rounded-3xl w-full my-auto bg-blue-100 outline-none "
+      />
+    </motion.div>
+    <div tw="w-full text-center text-lg font-bold mt-2 uppercase text-blue-400">
+      {value} {mesureUnit}
+    </div>
+  </div>
+);
+
+const Divider = () => <div tw="w-48 mx-auto border-t-2  border-blue-200"></div>;
 
 const FilterName = (TYPE) => {
   switch (TYPE) {
@@ -16,22 +63,6 @@ const FilterName = (TYPE) => {
   }
 };
 
-const Card = styled.div(({ selected }) => [
-  tw`bg-white rounded-xl border-2 border-blue-300 mb-2 p-2  
-cursor-pointer hover:ring-2 hover:ring-blue-300 shadow-inner`,
-  // selected && tw`ring-2 ring-blue-300`,
-]);
-
-const SelectableHalf = styled.div(({ selected, direction }) => [
-  tw`w-1/2  hover:bg-blue-200 flex`,
-  selected && tw`bg-blue-400 hover:bg-blue-400 text-blue-50`,
-  direction === "right" ? tw`rounded-r-3xl` : tw`rounded-l-3xl`,
-]);
-
-export const Button = tw.div`appearance-none rounded-xl w-full p-4 text-xl font-bold 
-text-white text-center bg-blue-500 outline-none cursor-pointer 
-hover:ring-4 hover:ring-blue-300 `;
-
 export const MedMeanFilter = ({
   Mean,
   selected,
@@ -40,7 +71,12 @@ export const MedMeanFilter = ({
   ...rest
 }) => {
   return (
-    <Card tw="flex flex-col" selected={selected} {...rest}>
+    <Card
+      tw="flex flex-col"
+      selected={selected}
+      {...rest}
+      {...(!selected && filterCardAnimations)}
+    >
       <div tw="text-blue-400 text-lg font-semibold text-center m-auto">
         {FilterName(Mean ? "MEAN" : "MEDIAN")}
       </div>
@@ -51,7 +87,7 @@ export const MedMeanFilter = ({
           <div tw="w-full text-center text-sm font-bold my-2 uppercase text-blue-400">
             voisinage
           </div>
-          <div tw="px-8">
+          <motion.div tw="px-8" {...sliderAnimation}>
             <input
               className="slider-thumb"
               type="range"
@@ -62,7 +98,7 @@ export const MedMeanFilter = ({
               onChange={(e) => setParams(parseInt(e.target.value))}
               tw="appearance-none  rounded-3xl w-full h-6 bg-blue-100 outline-none "
             />
-          </div>
+          </motion.div>
           <div tw="w-full text-center text-lg font-bold my-1 uppercase text-blue-400">
             {params}
           </div>
@@ -74,7 +110,12 @@ export const MedMeanFilter = ({
 
 export const ConvFilter = ({ selected, params, setParams, ...rest }) => {
   return (
-    <Card tw="flex flex-col" selected={selected} {...rest}>
+    <Card
+      tw="flex flex-col"
+      selected={selected}
+      {...rest}
+      {...(!selected && filterCardAnimations)}
+    >
       <div tw="text-blue-400 text-lg font-semibold text-center m-auto">
         {FilterName("CONV")}
       </div>
@@ -112,7 +153,12 @@ export const ConvFilter = ({ selected, params, setParams, ...rest }) => {
 
 export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
   return (
-    <Card tw="flex flex-col" selected={selected} {...rest}>
+    <Card
+      tw="flex flex-col"
+      selected={selected}
+      {...rest}
+      {...(!selected && filterCardAnimations)}
+    >
       <div tw="text-blue-400 text-lg font-semibold text-center m-auto">
         {FilterName("MORPH")}
       </div>
@@ -157,26 +203,19 @@ export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
               <option value={2}>cercle</option>
             </select>
           </div>
-          <div tw="w-full text-center text-sm font-bold my-1 uppercase text-blue-400">
-            {(params.op === 1 ? "DIALATE" : "EROSION") + " Size"}
-          </div>
-          <div tw="px-8">
-            <input
-              className="slider-thumb"
-              type="range"
-              min={1}
-              max={25}
-              step={1}
-              value={params.size}
-              onChange={(e) =>
-                setParams({ ...params, size: parseInt(e.target.value) })
-              }
-              tw="appearance-none  rounded-3xl w-full h-6 bg-blue-100 outline-none "
-            />
-          </div>
-          <div tw="w-full text-center text-lg font-bold my-1 uppercase text-blue-400">
-            {params.size}
-          </div>
+          <Slider
+            title={(params.op === 1 ? "DIALATE" : "EROSION") + " Size"}
+            min={1}
+            max={25}
+            step={1}
+            value={params.size}
+            onChange={(e) =>
+              setParams({ ...params, size: parseInt(e.target.value) }, false)
+            }
+            onMouseUp={(e) =>
+              setParams({ ...params, size: parseInt(e.target.value) })
+            }
+          />
         </>
       )}
     </Card>
@@ -185,12 +224,12 @@ export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
 
 export const GenerateVideo = ({ part2, setPart2 }) => {
   return (
-    <Card tw="flex flex-col cursor-auto border hover:ring-0">
+    <Card tw="flex flex-col cursor-auto border hover:ring-0" selected>
       {/* <div tw="text-blue-400 text-lg font-semibold text-center m-auto">
         {FilterName("MORPH")}
       </div> */}
 
-      <div tw="w-full text-center text-lg font-bold my-1 uppercase text-blue-400">
+      <div tw="w-full text-center  font-bold mb-1 uppercase text-blue-400">
         NB géométrie
       </div>
       <div tw="px-8">
@@ -204,14 +243,14 @@ export const GenerateVideo = ({ part2, setPart2 }) => {
           onChange={(e) =>
             setPart2({ ...part2, nbShapes: parseInt(e.target.value) })
           }
-          tw="appearance-none  rounded-3xl w-full h-6 bg-blue-100 outline-none "
+          tw="appearance-none rounded-3xl w-full h-6 bg-blue-100 outline-none "
         />
       </div>
-      <div tw="w-full text-center text-sm font-bold my-1 uppercase text-blue-400">
+      <div tw="w-full text-center text-sm font-bold text-blue-400">
         {part2.nbShapes} géométrie
       </div>
 
-      <div tw="w-48 mx-auto border-t-2 border-blue-200 my-2"></div>
+      <Divider />
 
       <div tw="w-full text-center text-lg font-bold my-1 uppercase text-blue-400">
         taux de Bruit
@@ -234,7 +273,7 @@ export const GenerateVideo = ({ part2, setPart2 }) => {
         {part2.tauxBruit}
       </div>
 
-      <div tw="w-48 mx-auto border-t-2 border-blue-200 my-2"></div>
+      <Divider />
 
       <div tw="w-full text-center text-lg font-bold my-1 uppercase text-blue-400">
         Video length
@@ -253,12 +292,12 @@ export const GenerateVideo = ({ part2, setPart2 }) => {
           tw="appearance-none  rounded-3xl w-full h-6 bg-blue-100 outline-none "
         />
       </div>
-      <div tw="w-full text-center text-sm font-bold my-1 uppercase text-blue-400">
+      <div tw="w-full text-center text-sm font-bold  uppercase text-blue-400">
         {part2.length} seconds
       </div>
 
       <div tw="px-8 my-4">
-        <Button>
+        <Button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
           <span>GENERATE</span>
         </Button>
       </div>

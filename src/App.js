@@ -10,12 +10,14 @@ import {
   GenerateVideo,
   Button,
 } from "./Components/Filter";
+import { motion } from "framer-motion";
 import { IoColorFilter } from "react-icons/io5";
 import { ImMakeGroup, ImSpinner10 } from "react-icons/im";
 import { GiMultipleTargets } from "react-icons/gi";
 import { MdCompare } from "react-icons/md";
 import { TiDownload, TiUpload } from "react-icons/ti";
 import { BsInboxesFill } from "react-icons/bs";
+
 // import logo from "../Assets/logo.svg";
 
 // const { app, protocol } = window.require("electron").remote;
@@ -38,9 +40,9 @@ const path2exe = path.join(
 
 const Container = tw.div`rounded-3xl border-2 border-blue-300 bg-gray-50 shadow`;
 
-const BigButton = styled.div(({ selected }) => [
+const BigButton = styled(motion.div)(({ selected }) => [
   tw`rounded-3xl bg-blue-100  border-blue-300 
-  w-20 h-20 m-auto my-3 hover:ring-2 ring-blue-300 cursor-pointer`,
+  w-20 h-20 m-auto my-4 hover:ring-2 ring-blue-300 cursor-pointer`,
   selected && tw`ring-2`,
 ]);
 
@@ -76,7 +78,7 @@ const translateParams = (filter, params) => {
     case 2:
       return `${params == 1 ? "GAUSS" : "LAPLAC"}`;
     case 3:
-      return `${params.op == 1 ? "DIALATE" : "EROSION"} ${params.type} ${
+      return `${params.op === 1 ? "DIALATE" : "EROSION"} ${params.type} ${
         params.size
       }`;
     default:
@@ -86,6 +88,7 @@ const translateParams = (filter, params) => {
 export default function App() {
   const [tab, setTab] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState(3);
+  const [emptyWarning, setEmptyWarning] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pathToFile, setPathToFile] = useState("");
   const [pathToResultFile, setPathToResultFile] = useState("");
@@ -98,7 +101,9 @@ export default function App() {
     type: 0,
     size: 4,
   });
-  //=====================================
+  const [isHoldingDiff, setIsHoldingDiff] = useState(false);
+
+  //===================================== PART2
   const [part2, setPart2] = useState({
     nbShapes: 6,
     tauxBruit: 6,
@@ -106,23 +111,25 @@ export default function App() {
     path2result: "",
   });
   //=====================================
-  const [isHoldingDiff, setIsHoldingDiff] = useState(false);
 
   const storeImageFile = async (e) => {
     // Open a dialog to ask for the file path
     const file = await dialog.showOpenDialog({ properties: ["openFile"] });
     if (file !== undefined) {
+      setPathToResultFile("");
       setPathToFile(file.filePaths[0]);
     }
   };
 
   const handleFilterChange = (filter) => (e) => {
+    setEmptyWarning(emptyWarning + 1);
+    if (filter === selectedFilter) return;
     setSelectedFilter(filter);
     if (!pathToFile) return;
     runFilters(filter);
   };
 
-  const handleFilterParamChange = (filter) => (parms) => {
+  const handleFilterParamChange = (filter) => (parms, runExperement) => {
     switch (filter) {
       case 0:
         setFilter1Params(parms);
@@ -140,7 +147,7 @@ export default function App() {
         break;
     }
     if (!pathToFile) return;
-    runFilters(filter, parms);
+    if (runExperement !== false) runFilters(filter, parms);
   };
 
   const runFilters = (filter, params) => {
@@ -171,14 +178,29 @@ export default function App() {
     <div tw="flex h-screen antialiased p-3 bg-gray-100 select-none">
       <Container tw="w-full md:w-6/12 mr-3 flex bg-gradient-to-r from-blue-50 to-gray-100">
         <div tw="w-32 border-2 border-l-0 border-blue-300 rounded-br-3xl rounded-tr-3xl mr-3 my-28 flex flex-col shadow-inner bg-gray-100">
-          <div tw="my-auto">
-            <BigButton selected={tab === 0} onClick={() => setTab(0)}>
+          <div tw="my-auto px-4">
+            <BigButton
+              selected={tab === 0}
+              onClick={() => setTab(0)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <IoColorFilter tw="h-20 w-full p-4 text-blue-400" />
             </BigButton>
-            <BigButton selected={tab === 1} onClick={() => setTab(1)}>
+            <BigButton
+              selected={tab === 1}
+              onClick={() => setTab(1)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <ImMakeGroup tw="h-full w-full p-4 text-blue-400" />
             </BigButton>
-            <BigButton selected={tab === 2} onClick={() => setTab(2)}>
+            <BigButton
+              selected={tab === 2}
+              onClick={() => setTab(2)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <GiMultipleTargets tw="h-full w-full p-4 text-blue-400" />
             </BigButton>
           </div>
@@ -256,7 +278,7 @@ export default function App() {
           <>
             <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
               {!pathToFile ? (
-                <Empty />
+                <Empty key={emptyWarning} />
               ) : loading ? (
                 <Loading />
               ) : (
@@ -285,7 +307,7 @@ export default function App() {
         ) : tab === 1 ? (
           <>
             <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
-              {part2.path2result ? ( // TODO flip to not
+              {!part2.path2result ? ( // TODO flip to not
                 <Empty />
               ) : loading ? (
                 <Loading />
@@ -314,19 +336,32 @@ export default function App() {
 
 const Loading = () => (
   <div tw="w-full h-full flex">
-    <ImSpinner10 tw="animate-spin text-blue-300 h-32 w-32 m-auto" />
+    <div tw="flex flex-col w-full">
+      <div tw="m-auto">
+        <ImSpinner10 tw="animate-spin text-blue-300 h-32 w-32 m-auto" />
+        <div tw="animate-pulse text-3xl text-blue-300 w-full text-center my-4">
+          Applying Filtere ...
+        </div>
+      </div>
+    </div>
   </div>
 );
 
 const Empty = () => (
   <div tw="w-full h-full flex">
     <div tw="flex flex-col w-full">
-      <div tw="animate-pulse m-auto">
+      <motion.div
+        tw="animate-pulse m-auto"
+        animate={{
+          scale: [1, 1.3, 1],
+        }}
+        transition={{ duration: 0.4 }}
+      >
         <BsInboxesFill tw=" text-blue-300 h-32 w-32 m-auto" />
         <div tw="text-3xl text-blue-300 w-full text-center my-4">
           Please select a file !
         </div>
-      </div>
+      </motion.div>
     </div>
   </div>
 );

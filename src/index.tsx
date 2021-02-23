@@ -14,7 +14,7 @@ import { createGlobalStyle } from "styled-components";
 
 const StylesBase = createGlobalStyle`
   .slider-thumb::-webkit-slider-thumb {
-    ${tw`appearance-none w-6 h-6 rounded-full bg-blue-400 cursor-pointer`} 
+    ${tw`appearance-none w-6 h-6 rounded-full bg-blue-400 cursor-pointer hover:ring-4 ring-blue-100`} 
   } 
 
   .slider-thumb::-webkit-slider-thumb:hover {
