@@ -1,5 +1,5 @@
-import { Slider } from "./Slider";
-import { Button, Card, Divider } from "./StyledComponents";
+import { Slider } from "../Slider";
+import { Button, Card, Divider } from "../StyledComponents";
 
 export const GenerateVideo = ({ part2, setPart2 }) => {
   return (

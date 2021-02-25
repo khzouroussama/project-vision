@@ -12,7 +12,6 @@
     "@types/react-dom": "^17.0.1",
     "concurrently": "^5.3.0",
     "cra-template-electron-react-typescript": "2.1.1",
-    "electron": "^11.2.3",
     "electron-is-dev": "^1.2.0",
     "framer-motion": "^3.6.7",
     "react": "^17.0.1",
@@ -33,7 +32,7 @@
     "eject": "react-scripts eject",
     "release": "yarn react-build && npm run electron-release",
     "electron-start": "electronmon .",
-    "electron-build": "electron-builder",
+    "electron-build": "electron-builder build -wl",
     "electron-release": "electron-builder --publish=always",
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
@@ -43,10 +42,12 @@
     "extends": "react-app"
   },
   "browserslist": [],
-  "main": "public/electron-main.js",
+  "main": "public/electron.js",
   "homepage": "./",
   "devDependencies": {
     "@types/react": "^17.0.2",
+    "electron": "^11.2.3",
+    "electron-builder": "^22.9.1",
     "@types/styled-components": "^5.1.7"
   },
   "build": {

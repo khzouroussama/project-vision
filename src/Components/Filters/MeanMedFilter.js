@@ -3,7 +3,7 @@ import React from "react";
 import tw from "twin.macro";
 import { filterCardAnimations, FilterName } from ".";
 import { Slider } from "../Slider";
-import { Card } from "../StyledComponents";
+import { Card, Divider } from "../StyledComponents";
 
 export const MedMeanFilter = ({
   Mean,
@@ -24,15 +24,18 @@ export const MedMeanFilter = ({
       </div>
 
       {selected && (
-        <Slider
-          title=""
-          min={1}
-          max={25}
-          step={2}
-          value={params}
-          onChange={(e) => setParams(parseInt(e.target.value), false)}
-          onMouseUp={(e) => setParams(parseInt(e.target.value))}
-        />
+        <>
+          <Divider />
+          <Slider
+            title="Voisins"
+            min={1}
+            max={25}
+            step={2}
+            value={params}
+            onChange={(e) => setParams(parseInt(e.target.value), false)}
+            onMouseUp={(e) => setParams(parseInt(e.target.value))}
+          />
+        </>
       )}
     </Card>
   );

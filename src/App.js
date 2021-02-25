@@ -3,21 +3,30 @@
 import React, { useState } from "react";
 // Assets
 import tw, { styled } from "twin.macro";
-import { MedMeanFilter, ConvFilter, MorphFilter } from "./Components/Filters";
 import { motion } from "framer-motion";
-import { IoColorFilter } from "react-icons/io5";
+
+import { MedMeanFilter, ConvFilter, MorphFilter } from "./Components/Filters";
+import { Shapes } from "./Components/GenerateVideo/Shapes";
+import { Noise } from "./Components/GenerateVideo/Noise";
+
+import { IoColorFilter, IoWarningOutline } from "react-icons/io5";
 import { ImMakeGroup, ImSpinner10 } from "react-icons/im";
 import { GiMultipleTargets } from "react-icons/gi";
 import { MdCompare } from "react-icons/md";
 import { TiDownload, TiUpload } from "react-icons/ti";
-import { BsInboxesFill } from "react-icons/bs";
+import { IoMdImages } from "react-icons/io";
 import { Button } from "./Components/StyledComponents";
-import { GenerateVideo } from "./Components/GenerateVideo";
+import { VideoConfig } from "./Components/GenerateVideo/VideoConfig";
+import VideoPlayer from "./Components/VideoPlayer";
+import { DetectNoiseSize } from "./Components/Detect/DetectNoiseSize";
+import { FaPhotoVideo } from "react-icons/fa";
+// import { GenerateVideo } from "./Components/GenerateVideo/GenerateVideo";
 
 // import logo from "../Assets/logo.svg";
 
 // const { app, protocol } = window.require("electron").remote;
 const { app, dialog } = window.require("electron").remote;
+const fs = window.require("fs");
 const path = window.require("path");
 const exec = window.require("child_process").exec;
 // const fs = window.require("fs");
@@ -31,7 +40,7 @@ const path2exe = path.join(
 // const path2exe = path.join(
 //   window.require("electron").remote.process.resourcesPath,
 //   "extraResources",
-//   "opencv.exe"
+//   "opencv"
 // );
 
 const Container = tw.div`rounded-3xl border-2 border-blue-300 bg-gray-50 shadow`;
@@ -42,7 +51,9 @@ const BigButton = styled(motion.div)(({ selected }) => [
   selected && tw`ring-2 hover:ring-2`,
 ]);
 
-const PlayButton = tw.div`rounded-full border-2 border-blue-300 w-20 h-20 shadow-lg`;
+const PlayButton = tw(
+  motion.div
+)`rounded-full border-2 border-blue-300 w-20 h-20 shadow-lg`;
 
 const FileButton = styled.div(({ direction }) => [
   tw`w-32 h-16 border-2 border-blue-300 bg-blue-50 hover:bg-blue-200 cursor-pointer flex flex-col`,
@@ -85,6 +96,11 @@ const translateParams = (filter, params) => {
       return `${params.op === 1 ? "DIALATE" : "EROSION"} ${params.type} ${
         params.size
       }`;
+    // PART 2 AND PART 3
+    case 4:
+      return `${params.length} ${params.nbShapes} ${params.nbNoise} ${params.minShapeSize} ${params.maxShapeSize} ${params.NoiseSize} ${params.t_Bruit}`;
+    case 5:
+      return `${params}`;
     default:
   }
 };
@@ -108,20 +124,79 @@ export default function App() {
   const [isHoldingDiff, setIsHoldingDiff] = useState(false);
 
   //===================================== PART2
+  const [selectedPart2, setSelectedPart2] = useState(0);
   const [part2, setPart2] = useState({
-    nbShapes: 6,
-    tauxBruit: 6,
+    nbShapes: 12,
+    maxShapeSize: 1000,
+    minShapeSize: 100,
+    nbNoise: 10,
+    NoiseSize: 1,
+    t_Bruit: 1,
     length: 30,
+    fps: 15,
     path2result: "",
   });
+  const [part2Result, setPart2Result] = useState({
+    length: 0,
+    fps: 0,
+    path2result: "",
+    path2resultVid: "",
+  });
+  const [part2Done, setPart2Done] = useState(true);
   //=====================================
-
-  const storeImageFile = async (e) => {
+  const [part3tbruit, setPart3tbruit] = useState(100);
+  const [part3Src, setPart3Src] = useState("");
+  const [part3dst, setPart3dst] = useState("");
+  const [part3Done, setPart3Done] = useState(true);
+  const [part3result, setPart3result] = useState({
+    length: 0,
+    path2result: "",
+  });
+  //==============================
+  const openFileForPart = (part) => async (e) => {
     // Open a dialog to ask for the file path
     const file = await dialog.showOpenDialog({ properties: ["openFile"] });
     if (file !== undefined) {
-      setPathToResultFile("");
-      setPathToFile(file.filePaths[0]);
+      if (part === 1) {
+        setPathToResultFile("");
+        setPathToFile(file.filePaths[0]);
+      } else if (part === 3) {
+        setPart3result({ length: 0, path2result: "" });
+        setPart3dst("");
+        setPart3Src(file.filePaths[0]);
+      }
+    }
+  };
+
+  const SaveFileFromPart = (part) => async (e) => {
+    const file = await dialog.showOpenDialog({ properties: ["openDirectory"] });
+    if (file !== undefined) {
+      if (part === 1) {
+        console.log(pathToResultFile);
+        fs.copyFile(
+          pathToResultFile || "",
+          path.join(file.filePaths[0], path.basename(pathToResultFile)),
+          (err) => {
+            if (err) {
+              alert("Nothing To Save !!");
+              throw err;
+            }
+            alert("Fichier Sauvgarder !");
+          }
+        );
+      } else if (part === 3) {
+        fs.copyFile(
+          part3dst || "",
+          path.join(file.filePaths[0], path.basename(part3dst)),
+          (err) => {
+            if (err) {
+              alert("Nothing To Save !!");
+              throw err;
+            }
+            alert("Fichier Sauvgarder !");
+          }
+        );
+      }
     }
   };
 
@@ -131,6 +206,84 @@ export default function App() {
     setSelectedFilter(filter);
     if (!pathToFile) return;
     runFilters(filter);
+  };
+
+  const onPart3Submit = () => {
+    setPart3Done(false);
+
+    fs.rmdirSync(path.join(app.getPath("userData"), "part3"), {
+      recursive: true,
+    });
+
+    const resultFolder = path.join(
+      app.getPath("userData"),
+      "part3",
+      "p3" + Date.now()
+    );
+
+    fs.mkdirSync(resultFolder, { recursive: true });
+
+    const cmnd = `${path2exe} p3 ${part3Src} ${path.join(
+      app.getPath("userData"),
+      "part3",
+      "result.avi"
+    )}  ${resultFolder} ${translateParams(5, part3tbruit)}`;
+
+    console.log(cmnd);
+
+    exec(cmnd, (error, stdout, stderr) => {
+      if (error) alert(error);
+      else {
+        console.log(resultFolder);
+        setPart3dst(path.join(app.getPath("userData"), "part3", "result.avi"));
+        setPart3result({
+          path2result: resultFolder,
+          length: 0,
+        });
+        setPart3Done(true);
+      }
+    });
+  };
+
+  const onPart2Submit = () => {
+    setPart2Done(false);
+
+    fs.rmdirSync(path.join(app.getPath("userData"), "part2"), {
+      recursive: true,
+    });
+
+    const resultFolder = path.join(
+      app.getPath("userData"),
+      "part2",
+      "p2" + Date.now()
+    );
+
+    fs.mkdirSync(resultFolder, { recursive: true });
+
+    const cmnd = `${path2exe} p2 ${path.join(
+      app.getPath("userData"),
+      "part2",
+      "result.avi"
+    )}  ${resultFolder} ${translateParams(4, part2)}`;
+
+    console.log(cmnd);
+
+    exec(cmnd, (error, stdout, stderr) => {
+      if (error) alert(error);
+      else {
+        console.log(resultFolder);
+        setPart2Result({
+          path2resultVid: path.join(
+            app.getPath("userData"),
+            "part2",
+            "result.avi"
+          ),
+          path2result: resultFolder,
+          length: part2.length,
+        });
+        setPart2Done(true);
+      }
+    });
   };
 
   const handleFilterParamChange = (filter) => (parms, runExperement) => {
@@ -168,7 +321,7 @@ export default function App() {
         [filter1params, filter2params, filter3params, filter4params][filter]
     )}`;
 
-    console.log(cmnd);
+    console.log(cmnd, app.getPath("userData"));
     exec(cmnd, (error, stdout, stderr) => {
       if (error) alert(error);
       else {
@@ -245,20 +398,45 @@ export default function App() {
                 onClick={handleFilterChange(3)}
               />
               <UpDownLoad
-                handleUpload={storeImageFile}
-                hadndleDownload={undefined}
+                handleUpload={openFileForPart(1)}
+                hadndleDownload={SaveFileFromPart(1)}
               />
             </div>
           ) : tab === 1 ? (
-            <div>
-              <div tw="w-full mb-4 text-2xl text-blue-400 font-bold text-center">
+            <div tw="relative h-full">
+              <div tw="w-full mb-4 text-2xl text-blue-400 font-bold text-center ">
                 <span tw="bg-clip-text text-transparent bg-gradient-to-tr from-blue-500 to-blue-300">
                   GENERATE
                 </span>
               </div>
-
-              <GenerateVideo part2={part2} setPart2={setPart2} />
-              <UpDownLoad />
+              <Shapes
+                params={part2}
+                setParams={setPart2}
+                selected={selectedPart2 === 0}
+                onClick={() => setSelectedPart2(0)}
+              />
+              <Noise
+                params={part2}
+                setParams={setPart2}
+                selected={selectedPart2 === 1}
+                onClick={() => setSelectedPart2(1)}
+              />
+              <VideoConfig
+                params={part2}
+                setParams={setPart2}
+                selected={selectedPart2 === 2}
+                onClick={() => setSelectedPart2(2)}
+              />
+              {/* <GenerateVideo part2={part2} setPart2={setPart2} /> */}
+              {/* <UpDownLoad /> */}
+              <Button
+                tw="absolute bottom-0"
+                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={onPart2Submit}
+              >
+                <span>GENERATE</span>
+              </Button>
             </div>
           ) : (
             <div>
@@ -267,11 +445,39 @@ export default function App() {
                   DETECT
                 </span>
               </div>
-
-              <Button>
-                <span>DETECT !</span>
-              </Button>
-              <UpDownLoad />
+              <DetectNoiseSize
+                params={part3tbruit}
+                setParams={setPart3tbruit}
+                selected
+              />
+              {part3Src ? (
+                <>
+                  <div tw="w-full bg-blue-100 p-2 px-4 h-16 border-2 border-blue-50 rounded-xl flex mb-4">
+                    <FaPhotoVideo tw=" h-8 w-8 my-auto text-blue-400" />
+                    <span tw="text-blue-400 flex-grow text-center my-auto font-bold">
+                      {path.basename(part3Src)}
+                    </span>
+                  </div>
+                  <Button
+                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.05 }}
+                    onClick={onPart3Submit}
+                  >
+                    <span>DETECT !</span>
+                  </Button>
+                </>
+              ) : (
+                <div tw="w-full bg-blue-100 p-2 px-4 h-16 border-2 border-blue-50 rounded-xl flex ">
+                  <IoWarningOutline tw=" h-8 w-8 my-auto text-blue-400" />
+                  <span tw="text-blue-400 flex-grow text-center my-auto font-bold">
+                    No File Selected
+                  </span>
+                </div>
+              )}
+              <UpDownLoad
+                handleUpload={openFileForPart(3)}
+                hadndleDownload={SaveFileFromPart(3)}
+              />
             </div>
           )}
         </div>
@@ -300,7 +506,11 @@ export default function App() {
                 />
               )}
             </div>
-            <PlayButton tw="absolute bottom-0 left-0 m-2 cursor-pointer bg-blue-50 hover:ring-2 ring-blue-300 hover:bg-blue-100 shadow-2xl">
+            <PlayButton
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              tw="absolute bottom-0 left-0 m-2 cursor-pointer bg-blue-50 hover:ring-2 ring-blue-300 hover:bg-blue-100 shadow-2xl"
+            >
               <MdCompare
                 tw="h-full w-full p-4 text-blue-400"
                 onMouseEnter={(e) => setIsHoldingDiff(true)}
@@ -311,40 +521,38 @@ export default function App() {
         ) : tab === 1 ? (
           <>
             <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
-              {!part2.path2result ? ( // TODO flip to not
-                <Empty />
-              ) : loading ? (
-                <Loading />
-              ) : (
-                <video
-                  controls
-                  autoplay
-                  tw="w-full h-full border rounded-3xl shadow-inner outline-none"
-                  alt=""
-                >
-                  <source
-                    src="atom:///home/oussama/test.mp4"
-                    type="video/mp4"
-                  />
-                </video>
-              )}
+              <VideoPlayer
+                done={part2Done}
+                length={part2Result.length}
+                pathToVideo={part2Result.path2result}
+                path2Avi={part2Result.path2resultVid}
+              />
             </div>
           </>
         ) : (
-          <></>
+          <>
+            <div tw="w-full h-full rounded-3xl shadow-inner border-4 border-dashed border-blue-300">
+              <VideoPlayer
+                done={part3Done}
+                length={part3result.length}
+                pathToVideo={part3result.path2result}
+                path2Avi={part3dst}
+              />
+            </div>
+          </>
         )}
       </Container>
     </div>
   );
 }
 
-const Loading = () => (
+export const Loading = ({ text }) => (
   <div tw="w-full h-full flex">
     <div tw="flex flex-col w-full">
       <div tw="m-auto">
         <ImSpinner10 tw="animate-spin text-blue-300 h-32 w-32 m-auto" />
         <div tw="animate-pulse text-3xl text-blue-300 w-full text-center my-4">
-          Applying Filtere ...
+          {text || "Applying Filtere ..."}
         </div>
       </div>
     </div>
@@ -361,9 +569,9 @@ const Empty = () => (
         }}
         transition={{ duration: 0.4 }}
       >
-        <BsInboxesFill tw=" text-blue-300 h-32 w-32 m-auto" />
+        <IoMdImages tw=" text-blue-300 h-32 w-32 m-auto" />
         <div tw="text-3xl text-blue-300 w-full text-center my-4">
-          Please select a file !
+          Please select an Image !
         </div>
       </motion.div>
     </div>

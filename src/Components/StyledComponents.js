@@ -18,6 +18,7 @@ export const Button = tw(
 )`appearance-none rounded-xl w-full p-4 text-xl font-bold 
   text-white text-center bg-blue-500 outline-none cursor-pointer`;
 
-export const Divider = () => (
-  <div tw="w-48 mx-auto border-t-2  border-blue-200"></div>
-);
+export const Divider = styled.div`
+  ${tw`w-48 mx-auto border-t-2  border-blue-200`}
+  ${({ small }) => small && tw`w-32`}
+`;

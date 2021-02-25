@@ -2,7 +2,7 @@
 import tw from "twin.macro";
 import { filterCardAnimations, FilterName } from ".";
 import { Slider } from "../Slider";
-import { Card, SelectableHalf } from "../StyledComponents";
+import { Card, SelectableHalf, Divider } from "../StyledComponents";
 
 export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
   return (
@@ -17,9 +17,9 @@ export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
       </div>
       {selected && (
         <>
-          <div tw="w-48 mx-auto border-t-2 border-blue-200 my-1"></div>
+          <Divider />
           <div tw="px-8">
-            <div tw="my-2 h-10 bg-blue-50 text-blue-400 font-bold text-center uppercase flex  rounded-3xl border-2 border-blue-300 ">
+            <div tw="mt-2 h-10 bg-blue-50 text-blue-400 font-bold text-center uppercase flex  rounded-3xl border-2 border-blue-300 ">
               <div tw="flex w-full">
                 <SelectableHalf
                   selected={params.op === 1}
@@ -38,12 +38,12 @@ export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
               </div>
             </div>
           </div>
-          <div tw="w-full text-center text-sm font-bold my-1 uppercase text-blue-400">
+          <div tw="w-full text-center text-sm font-bold mt-3 uppercase text-blue-400">
             {(params.op === 1 ? "DIALATE" : "EROSION") + " Type"}
           </div>
           <div tw="px-8 ">
             <select
-              tw="w-full text-lg font-bold my-1 uppercase text-blue-400 border-2
+              tw="w-full text-lg font-bold uppercase text-blue-400 border-2
                border-blue-300 rounded-3xl bg-blue-50 outline-none p-1"
               style={{ textAlignLast: "center" }}
               value={params.type}
@@ -57,6 +57,7 @@ export const MorphFilter = ({ selected, params, setParams, ...rest }) => {
             </select>
           </div>
           <Slider
+            // aside={false}
             aside
             title={(params.op === 1 ? "DIALATE" : "EROSION") + " Size"}
             min={1}

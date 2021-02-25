@@ -3,36 +3,60 @@ import React from "react";
 import tw, { styled } from "twin.macro";
 import { motion } from "framer-motion";
 
+const Container = styled.div`
+  ${({ playerSlider }) =>
+    !playerSlider ? tw`my-3` : tw`flex flex-grow px-2 my-auto`}
+  ${({ compact }) =>
+    compact &&
+    tw`border-2 border-blue-100  bg-blue-100 bg-opacity-30 rounded-xl my-1`}
+`;
+const SliderContainer = styled.div`
+  ${({ playerSlider }) =>
+    !playerSlider ? tw`flex-col w-full px-8 my-1` : tw`w-full my-auto flex`}
+`;
 const SliderInput = styled(motion.input)`
-  ${tw`appearance-none rounded-3xl  my-auto bg-blue-100 outline-none `}
-  ${({ aside }) => (aside ? tw`w-3/5` : tw`w-full`)}
+  ${tw`w-full appearance-none rounded-3xl bg-blue-100 outline-none`}
+  ${({ playerSlider }) => playerSlider && tw`bg-blue-200`}
 `;
 
 const SliderValue = styled.div`
-  ${tw`w-full text-center text-lg font-bold mt-2 uppercase text-blue-400`}
+  ${tw`text-center text-lg font-bold text-blue-400`}
+  ${({ compact }) => compact && tw`text-sm`}
 `;
 
 const sliderAnimation = {
   whileTap: { scale: 1.1 },
 };
 
-export const Slider = ({ title, value, mesureUnit, ...rest }) => (
-  <div>
-    <div tw="w-full text-center text-sm font-bold my-1 uppercase text-blue-400">
-      {title}
-    </div>
-    <div tw="">
-      <motion.div tw="px-8 h-4 w-full flex" {...sliderAnimation}>
-        <SliderInput
-          className="slider-thumb"
-          type="range"
-          value={value}
-          {...rest}
-        />
-      </motion.div>
-      <SliderValue>
-        {value} {mesureUnit}
-      </SliderValue>
-    </div>
-  </div>
+export const Slider = ({
+  aside,
+  title,
+  value,
+  mesureUnit,
+  compact,
+  playerSlider,
+  ...rest
+}) => (
+  <Container compact={compact} playerSlider={playerSlider}>
+    {title && !playerSlider && (
+      <div tw="w-full text-center text-sm font-bold mt-1 uppercase text-blue-400">
+        {title}
+      </div>
+    )}
+    <SliderContainer playerSlider={playerSlider}>
+      <SliderInput
+        playerSlider={playerSlider}
+        className="slider-thumb"
+        type="range"
+        value={value}
+        {...(playerSlider ? { whileTap: { scale: 1.03 } } : sliderAnimation)}
+        {...rest}
+      />
+      {!playerSlider && (
+        <SliderValue compact={compact}>
+          {value} {mesureUnit}
+        </SliderValue>
+      )}
+    </SliderContainer>
+  </Container>
 );
