@@ -1,7 +1,6 @@
 # PROJECT VISION 
 
-https://user-images.githubusercontent.com/20207933/109679390-d3d3d080-7b7b-11eb-960d-c9a830d7feb4.mp4
-
+![vid](https://user-images.githubusercontent.com/20207933/109679390-d3d3d080-7b7b-11eb-960d-c9a830d7feb4.mp4)
 
 
 ## yarn (/yarn) Scripts
