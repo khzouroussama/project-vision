@@ -1,22 +1,8 @@
-# [Electron](https://www.electronjs.org) [Typescript](https://www.typescriptlang.org) [Sass](https://sass-lang.com) template.
+# PROJECT VISION 
 
-This is my Electron - TypeScript - Sass template for [Create React App](https://github.com/facebook/create-react-app).
+https://user-images.githubusercontent.com/20207933/109679390-d3d3d080-7b7b-11eb-960d-c9a830d7feb4.mp4
 
-to use it paste this in your terminal
 
-```sh
-npx create-react-app my-app --template electron-node-react-sass-typescript
-
-# or
-
-yarn create react-app my-app --template electron-node-react-sass-typescript
-```
-
-For more information, please refer to:
-
-- [Getting Started](https://create-react-app.dev/docs/getting-started) – How to create a new app.
-- [User Guide](https://create-react-app.dev) – How to develop apps bootstrapped with Create React App.
-<hr/>
 
 ## yarn (/yarn) Scripts
 
